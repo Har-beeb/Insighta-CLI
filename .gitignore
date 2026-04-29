@@ -1,0 +1,4 @@
+node_modules/
+.env
+.insighta.json
+profiles_export.csv
