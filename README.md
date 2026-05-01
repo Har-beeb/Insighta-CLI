@@ -2,7 +2,6 @@
 
 A Command Line Interface for Insighta Labs to securely fetch, filter, and export user profiles from the terminal. 
 
----
 
 ## Setup & Installation
 
@@ -14,7 +13,6 @@ A Command Line Interface for Insighta Labs to securely fetch, filter, and export
 **3. Link the command globally to your machine:**
   ```npm link```
 
-  ---
 
 ## Usage
 
