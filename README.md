@@ -2,6 +2,8 @@
 
 A Command Line Interface for Insighta Labs to securely fetch, filter, and export user profiles from the terminal. 
 
+---
+
 ## Setup & Installation
 
 **1. Clone this repository.**
@@ -12,29 +14,65 @@ A Command Line Interface for Insighta Labs to securely fetch, filter, and export
 **3. Link the command globally to your machine:**
   ```npm link```
 
+  ---
+
 ## Usage
 
-**1. Authentication (GitHub OAuth)**
-Opens the browser to securely log in and saves your token locally.
-  ```insighta login```
+**1. The Basics & Auth**
 
-**2. Fetch Profiles**
-Displays a formatted table of all profiles in the database.
-  ```insighta profiles```
+Check CLI status:
+  ```insighta ping```
 
-**3. Natural Language Search**
-Translates plain text into a database query and returns filtered results.
-  ```insighta search "females over 25 from nigeria"```
+Log in to the system:
+```insighta login````
 
-**4. Export to CSV**
-Downloads the profiles data as a profiles_export.csv file in your current directory.
-  ```insighta export```
+Verify your current session and role:
+```insighta whoami```
 
-**5. Logout**
-Removes your locally saved access token.
-  ```insighta logout```
+Log out and destroy the token:
+```insighta logout```
 
 ---
+
+**2. Reading Data (Analysts & Admins)**
+
+Get a single profile by ID:
+```insighta get <paste_an_id_here>```
+
+Get a basic list of profiles:
+```insighta profiles```
+
+Get a paginated list:
+```insighta profiles --page 2 --limit 20```
+
+Get a filtered list:
+```insighta profiles --gender male --country NG```
+
+Search using natural language:
+```insighta search "young females from nigeria"```
+
+---
+
+**3. Writing Data (Admin Only)**
+
+Create a new profile:
+```insighta create --name "John Doe"```
+
+Delete a profile:
+```insighta delete <paste_an_id_here>```
+
+---
+
+**4. Exporting Data**
+
+Export all profiles to CSV:
+```insighta export```
+
+Export a filtered list to CSV:
+```insighta export --gender female --country NG```
+
+---
+
 ### 👤 Author
 - **Name:** Har-beebullah I.O
 - **HNG Slack ID:** H.A.X
