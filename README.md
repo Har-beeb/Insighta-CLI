@@ -22,7 +22,7 @@ Check CLI status:
   ```insighta ping```
 
 Log in to the system:
-```insighta login````
+```insighta login```
 
 Verify your current session and role:
 ```insighta whoami```
