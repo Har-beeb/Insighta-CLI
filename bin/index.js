@@ -9,6 +9,7 @@ const os = require("os");
 const readline = require("readline");
 
 const baseUrl = "https://hng-stage-0-api-eta.vercel.app";
+// const baseUrl = "https://localhost:3000";
 const CONFIG_FILE = path.join(os.homedir(), ".insighta.json");
 
 program
@@ -413,6 +414,119 @@ program
         );
       } else {
         console.log(chalk.red(`\n❌ Error exporting: ${error.message}`));
+      }
+    }
+  });
+
+  // 11. TEST CACHE COMMAND
+program
+  .command("test-cache")
+  .description("Test the Stage 4B Redis caching performance")
+  .option("-g, --gender <gender>", "Filter profiles by gender", "male")
+  .action(async (options) => {
+    // 1. Check if logged in (just like your other commands)
+    if (!fs.existsSync(CONFIG_FILE)) {
+      return console.log(
+        chalk.red('❌ You are not logged in. Please run "insighta login" first.')
+      );
+    }
+
+    // 2. Read the token from the local config
+    const token = JSON.parse(
+      fs.readFileSync(CONFIG_FILE, "utf-8")
+    ).access_token;
+
+    try {
+      console.log(chalk.blue(`\n🚀 Firing requests to test Redis cache (Filter: ${options.gender})...`));
+
+      // Setup the auth headers using your existing format
+      const requestConfig = {
+        headers: { "X-API-Version": "1", Authorization: `Bearer ${token}` },
+        params: { gender: options.gender }
+      };
+
+      // --- ROUND 1: Cold Request (Hits MongoDB) ---
+      const start1 = Date.now();
+      const res1 = await axios.get(`${baseUrl}/api/profiles`, requestConfig);
+      const time1 = Date.now() - start1;
+      
+      console.log(chalk.yellow(`\n[Round 1 - DB]`));
+      console.log(`Time:   ${time1}ms`);
+      console.log(`Source: ${res1.data.source || 'Database'}`);
+
+      // --- ROUND 2: Warm Request (Hits Redis Cache) ---
+      const start2 = Date.now();
+      const res2 = await axios.get(`${baseUrl}/api/profiles`, requestConfig);
+      const time2 = Date.now() - start2;
+
+      console.log(chalk.green(`\n[Round 2 - Cache]`));
+      console.log(`Time:   ${time2}ms`);
+      console.log(`Source: ${res2.data.source || 'Cache'}`);
+
+      // --- SUMMARY ---
+      if (time2 < time1) {
+        console.log(chalk.cyan(`\n✅ Cache is active! Request was ${time1 - time2}ms faster.`));
+      } else {
+        console.log(chalk.yellow(`\n⚠️ Cache didn't seem faster. Check if Redis is connected.`));
+      }
+
+    } catch (error) {
+      if (error.response?.status === 401) {
+        console.log(
+          chalk.red('\n❌ Your session is invalid or expired. Please run "insighta login" again.')
+        );
+      } else {
+        console.log(chalk.red(`\n❌ Error hitting the API: ${error.message}`));
+      }
+    }
+  });
+
+  // 12. UPLOAD COMMAND
+program
+  .command("upload <filepath>")
+  .description("Upload a CSV file to test ingestion streams")
+  .action(async (filepath) => {
+    const fs = require('fs');
+    const path = require('path');
+    const FormData = require('form-data');
+
+    if (!fs.existsSync(CONFIG_FILE)) {
+      return console.log(chalk.red('❌ You are not logged in. Please run "insighta login" first.'));
+    }
+
+    const token = JSON.parse(fs.readFileSync(CONFIG_FILE, "utf-8")).access_token;
+    const fullPath = path.resolve(filepath);
+
+    if (!fs.existsSync(fullPath)) {
+      return console.log(chalk.red(`❌ File not found: ${fullPath}`));
+    }
+
+    try {
+      console.log(chalk.yellow(`\n📤 Streaming ${filepath} to the server...`));
+      console.log(chalk.gray(`(If this is the 500k row file, this might take a minute!)`));
+
+      const form = new FormData();
+      form.append('file', fs.createReadStream(fullPath));
+
+      const response = await axios.post(`${baseUrl}/api/profiles/upload`, form, {
+        headers: { 
+          "X-API-Version": "1", 
+          Authorization: `Bearer ${token}`,
+          ...form.getHeaders()
+        },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity
+      });
+
+      console.log(chalk.green(`\n✅ Upload Complete!`));
+      console.log(chalk.cyan(JSON.stringify(response.data, null, 2)));
+
+    } catch (error) {
+      if (error.response?.status === 401) {
+        console.log(chalk.red('\n❌ Your session is invalid.'));
+      } else {
+        console.log(chalk.red(`\n❌ Upload failed: ${error.message}`));
+        if (error.response) console.log(error.response.data);
       }
     }
   });
