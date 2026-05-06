@@ -71,6 +71,23 @@ Export a filtered list to CSV:
 
 ---
 
+**5. Uploading Data**
+
+Upload filelist in CSV
+```insighta upload <filepath>```
+
+---
+
+**6. Caching Data**
+
+Cache Data
+```insighta test-cache```
+
+Cache Filltered Data
+```insighta test-cache -g female```
+
+---
+
 ### 👤 Author
 - **Name:** Har-beebullah I.O
 - **HNG Slack ID:** H.A.X
